@@ -9,6 +9,32 @@
  *       description: JWT token d'authentification
  * 
  *   schemas:
+ *     AuthToken:
+ *       type: object
+ *       required:
+ *         - token
+ *       properties:
+ *         token:
+ *           type: string
+ *           description: JWT token d'authentification
+ *           example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+ * 
+ *     AuthError:
+ *       type: object
+ *       properties:
+ *         error:
+ *           type: string
+ *           description: Message d'erreur d'authentification
+ *           example: "Token invalide ou expiré"
+ * 
+ *     RoleError:
+ *       type: object
+ *       properties:
+ *         error:
+ *           type: string
+ *           description: Message d'erreur de permission
+ *           example: "Accès non autorisé pour ce rôle"
+ * 
  *     ErrorResponse:
  *       type: object
  *       properties:

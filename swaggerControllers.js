@@ -2,7 +2,106 @@
  * @swagger
  * components:
  *   schemas:
- *     // ... existing schemas ...
+ *     PatientActivationResponse:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           description: Indique si l'activation a réussi
+ *           example: true
+ *         message:
+ *           type: string
+ *           description: Message de confirmation
+ *           example: "Compte activé avec succès"
+ * 
+ *     PatientCreationResponse:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           description: Indique si la création a réussi
+ *           example: true
+ *         message:
+ *           type: string
+ *           description: Message de confirmation
+ *           example: "Patient créé avec succès"
+ *         data:
+ *           type: object
+ *           properties:
+ *             id:
+ *               type: string
+ *               format: objectId
+ *               description: ID du patient créé
+ *               example: "507f1f77bcf86cd799439011"
+ * 
+ *     ErrorResponse:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           description: Indique si l'opération a échoué
+ *           example: false
+ *         error:
+ *           type: string
+ *           description: Message d'erreur
+ *           example: "Erreur lors de l'activation du compte"
+ * 
+ *     PatientActivationRequest:
+ *       type: object
+ *       required:
+ *         - token
+ *         - password
+ *       properties:
+ *         token:
+ *           type: string
+ *           description: Token d'activation
+ *           example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+ *         password:
+ *           type: string
+ *           description: Nouveau mot de passe
+ *           example: "NouveauMotDePasse123!"
+ * 
+ *     PatientCreationRequest:
+ *       type: object
+ *       required:
+ *         - email
+ *         - nom
+ *         - prenom
+ *         - telephone
+ *       properties:
+ *         email:
+ *           type: string
+ *           format: email
+ *           description: Email du patient
+ *           example: "patient@example.com"
+ *         nom:
+ *           type: string
+ *           description: Nom du patient
+ *           example: "Dupont"
+ *         prenom:
+ *           type: string
+ *           description: Prénom du patient
+ *           example: "Jean"
+ *         telephone:
+ *           type: string
+ *           description: Numéro de téléphone
+ *           example: "+33612345678"
+ * 
+ *     ConnexionRequest:
+ *       type: object
+ *       required:
+ *         - email
+ *         - password
+ *       properties:
+ *         email:
+ *           type: string
+ *           format: email
+ *           description: Email de l'utilisateur
+ *           example: "utilisateur@example.com"
+ *         password:
+ *           type: string
+ *           description: Mot de passe
+ *           example: "MotDePasse123!"
  * 
  *   responses:
  *     PatientActivationResponse:
