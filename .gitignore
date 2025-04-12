@@ -1,5 +1,143 @@
-# Ignore le module node.js
-node_modules
+# Dépendances
+node_modules/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+package-lock.json
+yarn.lock
 
-# Ignore le fichier .env pour raison de sécurité
+# Environnement
 .env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Répertoires de build
+dist/
+build/
+out/
+
+# Couverture de test
+coverage/
+.nyc_output/
+
+# IDE et éditeurs
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+*.sublime-project
+*.sublime-workspace
+
+# Fichiers temporaires
+*.tmp
+*.temp
+.temp/
+tmp/
+
+# Fichiers de cache
+.cache/
+.npm/
+.eslintcache
+.stylelintcache
+
+# Fichiers de configuration spécifiques à l'environnement
+config/local.js
+config/development.js
+config/test.js
+config/production.js
+
+# Fichiers de base de données
+*.sqlite
+*.sqlite3
+*.db
+mongodb-data/
+
+# Fichiers de sauvegarde
+*.bak
+*.backup
+*.old
+
+# Fichiers de documentation générés
+docs/api/
+docs/build/
+
+# Fichiers de déploiement
+*.zip
+*.tar.gz
+*.rar
+
+# Fichiers spécifiques au projet
+uploads/
+temp/
+media/
+public/uploads/
+public/temp/
+
+# Fichiers de session
+session/
+
+# Fichiers de cache de l'application
+.cache/
+.temp/
+
+# Fichiers de test
+test-results/
+test-coverage/
+
+# Fichiers de configuration spécifiques à l'OS
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Fichiers de configuration spécifiques à l'IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+*.sublime-project
+*.sublime-workspace
+
+# Fichiers de configuration spécifiques à l'éditeur
+.editorconfig
+.eslintrc
+.prettierrc
+.stylelintrc
+
+# Fichiers de configuration spécifiques au projet
+.eslintignore
+.prettierignore
+.stylelintignore
+
+# Fichiers de configuration spécifiques à l'environnement
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Fichiers de configuration spécifiques à l'utilisateur
+.npmrc
+.yarnrc
+.pnpmrc
+
+# Fichiers de configuration spécifiques au système
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
