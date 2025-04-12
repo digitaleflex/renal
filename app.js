@@ -120,6 +120,43 @@ app.use(swaggerStats.getMiddleware({
   authentication: true,
   onAuthenticate: function(req, username, password) {
     return (username === 'admin' && password === 'admin');
+  },
+  elasticsearch: 'http://localhost:9200',
+  elasticsearchIndexPrefix: 'swagger-stats',
+  elasticsearchUsername: 'elastic',
+  elasticsearchPassword: 'changeme',
+  durationBuckets: [50, 100, 200, 500, 1000, 5000],
+  requestSizeBuckets: [500, 5000, 15000, 50000],
+  responseSizeBuckets: [500, 5000, 15000, 50000],
+  apdexThreshold: 50,
+  onResponseFinish: function(req, res, rrr) {
+    console.log('Response finished:', rrr);
+  },
+  swaggerSpec: swaggerDocs,
+  hostname: 'localhost',
+  ip: '127.0.0.1',
+  uriPath: '/swagger-stats',
+  timelineBucketDuration: 60000,
+  bucketDuration: 60000,
+  maxTimeline: 100,
+  name: 'Suivi Rénal API',
+  version: '1.0.0',
+  hostname: 'localhost',
+  ip: '127.0.0.1',
+  authentication: true,
+  onAuthenticate: function(req, username, password) {
+    return (username === 'admin' && password === 'admin');
+  },
+  elasticsearch: 'http://localhost:9200',
+  elasticsearchIndexPrefix: 'swagger-stats',
+  elasticsearchUsername: 'elastic',
+  elasticsearchPassword: 'changeme',
+  durationBuckets: [50, 100, 200, 500, 1000, 5000],
+  requestSizeBuckets: [500, 5000, 15000, 50000],
+  responseSizeBuckets: [500, 5000, 15000, 50000],
+  apdexThreshold: 50,
+  onResponseFinish: function(req, res, rrr) {
+    console.log('Response finished:', rrr);
   }
 }));
 
