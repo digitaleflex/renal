@@ -7,19 +7,35 @@ const swaggerJsdoc = require('swagger-jsdoc');
 const morgan = require('morgan');
 const swaggerStats = require('swagger-stats');
 const SwaggerParser = require('swagger-parser');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const compression = require('compression');
+const cookieParser = require('cookie-parser');
+const { v4: uuidv4 } = require('uuid');
+const { createLogger, format, transports } = require('winston');
+const { createIndices, indexLog, indexStat, indexError } = require('./config/elasticsearch');
 
-const userRoutes = require('./routes/userRoutes');
-const administratorRoutes = require('./routes/administratorRoutes');
-const doctorRoutes = require('./routes/doctorRoutes');
-const nurseRoutes = require('./routes/nurseRoutes');
-const patientRoutes = require('./routes/patientRoutes');
+// Import des routes
+const routes = require('./routes');
 
-// Import de la documentation des modèles
-require('./swaggerModels');
-require('./swaggerControllers');
-require('./swaggerSecurity');
-require('./swaggerDtos');
-require('./swaggerMiddlewares');
+// Configuration du logger Winston
+const logger = createLogger({
+  level: 'info',
+  format: format.combine(
+    format.timestamp(),
+    format.json()
+  ),
+  transports: [
+    new transports.File({ filename: 'error.log', level: 'error' }),
+    new transports.File({ filename: 'combined.log' }),
+    new transports.Console({
+      format: format.combine(
+        format.colorize(),
+        format.simple()
+      )
+    })
+  ]
+});
 
 // Configuration Swagger
 const swaggerOptions = {
@@ -36,8 +52,8 @@ const swaggerOptions = {
     },
     servers: [
       {
-        url: 'http://localhost:5000',
-        description: 'Serveur de développement',
+        url: process.env.API_URL || 'http://localhost:5000',
+        description: process.env.NODE_ENV === 'production' ? 'Serveur de production' : 'Serveur de développement',
       },
     ],
     components: {
@@ -111,77 +127,103 @@ const swaggerOptions = {
 
 const swaggerDocs = swaggerJsdoc(swaggerOptions);
 
-// Configuration de Swagger Stats
-app.use(swaggerStats.getMiddleware({
-  name: 'Suivi Rénal API',
-  version: '1.0.0',
-  timelineBucketDuration: 60000,
-  uriPath: '/swagger-stats',
-  authentication: true,
-  onAuthenticate: function(req, username, password) {
-    return (username === 'admin' && password === 'admin');
-  },
-  elasticsearch: 'http://localhost:9200',
-  elasticsearchIndexPrefix: 'swagger-stats',
-  elasticsearchUsername: 'elastic',
-  elasticsearchPassword: 'changeme',
-  durationBuckets: [50, 100, 200, 500, 1000, 5000],
-  requestSizeBuckets: [500, 5000, 15000, 50000],
-  responseSizeBuckets: [500, 5000, 15000, 50000],
-  apdexThreshold: 50,
-  onResponseFinish: function(req, res, rrr) {
-    console.log('Response finished:', rrr);
-  },
-  swaggerSpec: swaggerDocs,
-  hostname: 'localhost',
-  ip: '127.0.0.1',
-  uriPath: '/swagger-stats',
-  timelineBucketDuration: 60000,
-  bucketDuration: 60000,
-  maxTimeline: 100,
-  name: 'Suivi Rénal API',
-  version: '1.0.0',
-  hostname: 'localhost',
-  ip: '127.0.0.1',
-  authentication: true,
-  onAuthenticate: function(req, username, password) {
-    return (username === 'admin' && password === 'admin');
-  },
-  elasticsearch: 'http://localhost:9200',
-  elasticsearchIndexPrefix: 'swagger-stats',
-  elasticsearchUsername: 'elastic',
-  elasticsearchPassword: 'changeme',
-  durationBuckets: [50, 100, 200, 500, 1000, 5000],
-  requestSizeBuckets: [500, 5000, 15000, 50000],
-  responseSizeBuckets: [500, 5000, 15000, 50000],
-  apdexThreshold: 50,
-  onResponseFinish: function(req, res, rrr) {
-    console.log('Response finished:', rrr);
+// Configuration de la sécurité
+app.use(helmet());
+app.use(cors({
+  origin: process.env.CORS_ORIGIN || '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+}));
+
+// Configuration du rate limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limite chaque IP à 100 requêtes par windowMs
+  message: 'Trop de requêtes depuis cette IP, veuillez réessayer plus tard'
+});
+app.use('/api/', limiter);
+
+// Middleware de compression
+app.use(compression());
+
+// Middleware pour parser les cookies
+app.use(cookieParser());
+
+// Middleware pour parser le JSON
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Initialisation d'Elasticsearch
+createIndices().catch(console.error);
+
+// Middleware de logging avec morgan et Elasticsearch
+app.use(morgan(':method :url :status :res[content-length] - :response-time ms', {
+  stream: {
+    write: async (message) => {
+      logger.info(message.trim());
+      await indexLog({
+        message: message.trim(),
+        level: 'info',
+        method: message.split(' ')[0],
+        url: message.split(' ')[1],
+        status: parseInt(message.split(' ')[2]),
+        responseTime: parseFloat(message.split(' ')[5])
+      });
+    }
   }
 }));
+
+// Middleware pour ajouter un ID unique à chaque requête
+app.use((req, res, next) => {
+  req.id = uuidv4();
+  next();
+});
+
+// Configuration de Swagger Stats
+const swaggerStatsConfig = {
+  name: 'Suivi Rénal API',
+  version: '1.0.0',
+  timelineBucketDuration: 60000,
+  uriPath: '/swagger-stats',
+  authentication: true,
+  onAuthenticate: (req, username, password) => {
+    return (username === process.env.SWAGGER_STATS_USERNAME && 
+            password === process.env.SWAGGER_STATS_PASSWORD);
+  },
+  elasticsearch: process.env.ELASTICSEARCH_URL,
+  elasticsearchIndexPrefix: 'swagger-stats',
+  elasticsearchUsername: process.env.ELASTICSEARCH_USERNAME,
+  elasticsearchPassword: process.env.ELASTICSEARCH_PASSWORD,
+  durationBuckets: [50, 100, 200, 500, 1000, 5000],
+  requestSizeBuckets: [500, 5000, 15000, 50000],
+  responseSizeBuckets: [500, 5000, 15000, 50000],
+  apdexThreshold: 50,
+  onResponseFinish: async (req, res, rrr) => {
+    logger.info(`Response finished: ${JSON.stringify(rrr)}`);
+    await indexStat({
+      endpoint: req.path,
+      method: req.method,
+      responseTime: rrr.duration,
+      status: rrr.status,
+      requestSize: rrr.requestLength,
+      responseSize: rrr.responseLength
+    });
+  }
+};
+
+app.use(swaggerStats.getMiddleware(swaggerStatsConfig));
 
 // Validation de la documentation Swagger
 SwaggerParser.validate(swaggerDocs)
   .then(() => {
-    console.log('Documentation Swagger valide');
+    logger.info('Documentation Swagger valide');
   })
   .catch(err => {
-    console.error('Erreur dans la documentation Swagger:', err);
+    logger.error('Erreur dans la documentation Swagger:', err);
   });
 
-require("dotenv").config(); // Charge les variables d'environnement depuis .env
-
-//Connect to database
-connectDB();
-
-//Middleware
-app.use(express.json());
-app.use(cors());
-
-// Configuration des logs avec morgan
-app.use(morgan(':method :url :status :res[content-length] - :response-time ms'));
-
-// Configuration de l'interface Swagger avec thème personnalisé
+// Configuration de l'interface Swagger
 const swaggerUiOptions = {
   customCss: '.swagger-ui .topbar { display: none } .swagger-ui { max-width: 1200px; margin: 0 auto; }',
   customSiteTitle: "Documentation API Suivi Rénal",
@@ -201,37 +243,44 @@ const swaggerUiOptions = {
   }
 };
 
-// Documentation Swagger
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs, swaggerUiOptions));
-
-// Message de Bienvenue au demarrage du fichier
-app.get('/', (req, res) => {
-    res.send("Bienvenue sur l'API Suivi Rénal");
-});
-
 // Routes
-app.use('/api/user', userRoutes);
-app.use('/api/admin', administratorRoutes);
-app.use('/api/doctor', doctorRoutes);
-app.use('/api/nurse', nurseRoutes);
-app.use('/api/patient', patientRoutes);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs, swaggerUiOptions));
+app.use('/api', routes);
 
-// Middleware pour la gestion des erreurs
+// Middleware pour la gestion des erreurs avec Elasticsearch
 app.use((err, req, res, next) => {
-    console.error(`[${new Date().toISOString()}] Erreur: ${err.message}`);
-    console.error(err.stack);
-    res.status(500).json({
-        error: 'Une erreur est survenue sur le serveur',
-        message: process.env.NODE_ENV === 'development' ? err.message : undefined
-    });
+  logger.error(`[${req.id}] Erreur: ${err.message}`);
+  logger.error(err.stack);
+  
+  indexError({
+    requestId: req.id,
+    error: err.message,
+    stack: err.stack,
+    endpoint: req.path,
+    method: req.method
+  }).catch(console.error);
+  
+  res.status(err.status || 500).json({
+    error: 'Une erreur est survenue sur le serveur',
+    message: process.env.NODE_ENV === 'development' ? err.message : undefined,
+    requestId: req.id
+  });
 });
 
-// Port d'ecoute
+// Middleware pour les routes non trouvées
+app.use((req, res) => {
+  res.status(404).json({
+    error: 'Route non trouvée',
+    requestId: req.id
+  });
+});
+
+// Démarrage du serveur
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-    console.log(`\n=============================================`);
-    console.log(`🚀 Serveur démarré sur le port ${PORT}`);
-    console.log(`📚 Documentation Swagger disponible sur: http://localhost:${PORT}/api-docs`);
-    console.log(`🌐 Environnement: ${process.env.NODE_ENV || 'development'}`);
-    console.log(`=============================================\n`);
+  logger.info(`\n=============================================`);
+  logger.info(`🚀 Serveur démarré sur le port ${PORT}`);
+  logger.info(`📚 Documentation Swagger disponible sur: http://localhost:${PORT}/api-docs`);
+  logger.info(`🌐 Environnement: ${process.env.NODE_ENV || 'development'}`);
+  logger.info(`=============================================\n`);
 });
