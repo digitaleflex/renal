@@ -1,0 +1,40 @@
+{
+  "name": "suivi_renale",
+  "version": "1.0.0",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node app.js",
+    "dev": "nodemon app.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "body-parser": "^1.20.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "express-session": "^1.18.1",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.12.2",
+    "morgan": "^1.10.0",
+    "nodemailer": "^6.10.0",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
+    "yup": "^1.6.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aristide-ghd/Suivi_renale.git"
+  },
+  "bugs": {
+    "url": "https://github.com/aristide-ghd/Suivi_renale/issues"
+  },
+  "homepage": "https://github.com/aristide-ghd/Suivi_renale#readme",
+  "description": ""
+}
