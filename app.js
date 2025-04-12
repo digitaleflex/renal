@@ -15,6 +15,9 @@ const patientRoutes = require('./routes/patientRoutes');
 // Import de la documentation des modèles
 require('./swaggerModels');
 require('./swaggerControllers');
+require('./swaggerSecurity');
+require('./swaggerDtos');
+require('./swaggerMiddlewares');
 
 // Configuration Swagger
 const swaggerOptions = {

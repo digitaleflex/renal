@@ -33,6 +33,17 @@
   - Documentation des paramètres
   - Documentation des exemples de réponses
   - Documentation des schémas de sécurité
+- Documentation des DTOs
+  - Documentation du DTO AddPatientByPro
+  - Documentation du DTO ActiverCompte
+  - Documentation du DTO Connexion
+  - Exemples de requêtes pour chaque DTO
+- Documentation des middlewares
+  - Documentation du middleware d'authentification
+  - Documentation du middleware de vérification des permissions
+  - Documentation du middleware de validation des utilisateurs
+  - Documentation du middleware de validation Yup
+  - Exemples d'erreurs pour chaque middleware
 
 ### Modifié
 - Amélioration des logs du serveur
@@ -42,8 +53,10 @@
 - Configuration Swagger
   - Ajout de la documentation des modèles
   - Ajout de la documentation des contrôleurs
+  - Ajout de la documentation des DTOs
+  - Ajout de la documentation des middlewares
   - Configuration du schéma d'authentification JWT
-  - Mise à jour des chemins d'API pour inclure les modèles et contrôleurs
+  - Mise à jour des chemins d'API pour inclure les modèles, contrôleurs, DTOs et middlewares
 
 ### Détails techniques
 
@@ -63,6 +76,15 @@
   - Corps de requête standardisés
   - Exemples de réponses
   - Paramètres communs
+- Documentation des DTOs
+  - Schémas de validation
+  - Exemples de requêtes
+  - Contraintes de validation
+- Documentation des middlewares
+  - Schémas d'authentification
+  - Schémas de permission
+  - Schémas de validation
+  - Exemples d'erreurs
 - Configuration de l'authentification JWT
   - Schéma bearerAuth
   - Format JWT
